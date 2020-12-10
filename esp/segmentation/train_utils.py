@@ -42,6 +42,7 @@ def val(args, val_loader, model, criterion):
         # run the mdoel
         output1 = model(input)
 
+        print(output1.size())
         # compute the loss
         loss = criterion(output1, target)
 
