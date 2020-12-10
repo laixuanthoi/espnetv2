@@ -28,6 +28,5 @@ def writeTextFile(textFile, arr):
         for a in arr:
             f.write('segmentation/data/{},segmentation/label/{}\n'.format(a, a))
 
-
 writeTextFile(train_file, train_arr)
 writeTextFile(val_file, val_arr)
