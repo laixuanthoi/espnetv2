@@ -116,6 +116,7 @@ def run():
         #Load the files into one input queue
         images = tf.convert_to_tensor(image_files)
         annotations = tf.convert_to_tensor(annotation_files)
+        print(images.shape, annotations.shape)
         tdataset = tf.data.Dataset.from_tensor_slices((images,annotations))
         tdataset = tdataset.map(decode)
         tdataset = tdataset.shuffle(100).batch(batch_size).repeat(num_epochs)
