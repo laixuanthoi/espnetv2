@@ -70,8 +70,8 @@ class LoadData:
                 # if 255 in unique_values:
 	            #     label_img[tmp_label==255] = 19
                 
-                label_img[(tmp_label > 20) & (tmp_label < 40)] = 30
-                label_img[(tmp_label > 240)] = 255
+                label_img[(tmp_label > 20) & (tmp_label < 40)] = 1
+                label_img[(tmp_label > 240)] = 2
 
                 unique_values = np.unique(label_img)
                 
