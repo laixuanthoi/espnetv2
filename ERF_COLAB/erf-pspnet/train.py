@@ -16,7 +16,7 @@ flags = tf.app.flags
 flags.DEFINE_string('dataset_dir', './newdataset', 'The dataset directory to find the train, validation and test images.')
 flags.DEFINE_string('logdir', './log/camvid', 'The log directory to save your checkpoint and event files.')
 #Training arguments
-flags.DEFINE_integer('num_classes', 2, 'The number of classes to predict.')
+flags.DEFINE_integer('num_classes', 3, 'The number of classes to predict.')
 flags.DEFINE_integer('batch_size', 8, 'The batch_size for training.')
 flags.DEFINE_integer('eval_batch_size', 24, 'The batch size used for validation.')
 flags.DEFINE_integer('image_height',120, "The input height of the images.")
@@ -72,10 +72,7 @@ decay_steps = int(num_epochs_before_decay * num_steps_per_epoch)
 #=================CLASS WEIGHTS===============================
 #Median frequency balancing class_weights
 
-class_weights = np.array(   [40.69042899, 47.6765088 , 12.70029695, 45.20543212, 45.78372173,
-       45.82527748, 48.40614895, 42.75593537,  3.36208549, 14.03151966,
-        4.9866471 , 39.25440643, 36.51259517, 32.81231979,  6.69824427,
-       33.55546509, 18.48781934, 32.97432129, 46.28665742],dtype=np.float32) 
+class_weights = np.array(   [1.000000, 0.519129,5.523471],dtype=np.float32) 
 
 def weighted_cross_entropy(onehot_labels, logits, class_weights):
     #a=tf.reduce_sum(-tf.log(tf.clip_by_value(logits, 1e-10, 1.0))*(1-logits)*(1-logits)*onehot_labels*class_weights)
