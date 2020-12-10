@@ -15,7 +15,7 @@ import numpy as np
 for f in glob.glob(os.path.join("dataset", "valannot", "*.png")):
     basename = os.path.basename(f)
     filename = os.path.splitext(basename)[0]
-    img = cv2.imread(f, 1)
+    img = cv2.imread(f, 0)
 
     # newImg = np.zeros(img.shape, np.uint8)
 

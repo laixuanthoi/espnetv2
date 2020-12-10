@@ -72,7 +72,7 @@ decay_steps = int(num_epochs_before_decay * num_steps_per_epoch)
 #=================CLASS WEIGHTS===============================
 #Median frequency balancing class_weights
 
-class_weights = np.array(   [1.000000, 0.519129,5.523471],dtype=np.float32) 
+class_weights = np.array(   [1.000000, 0.467367,5.144489],dtype=np.float32) 
 
 def weighted_cross_entropy(onehot_labels, logits, class_weights):
     #a=tf.reduce_sum(-tf.log(tf.clip_by_value(logits, 1e-10, 1.0))*(1-logits)*(1-logits)*onehot_labels*class_weights)
