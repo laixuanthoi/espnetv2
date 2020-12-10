@@ -72,6 +72,7 @@ class LoadData:
                 
                 label_img[(tmp_label > 20) & (tmp_label < 40)] = 1
                 label_img[(tmp_label > 240)] = 2
+                label_img[(tmp_label < 20)] = 0 #background
 
                 unique_values = np.unique(label_img)
                 
