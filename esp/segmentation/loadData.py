@@ -68,10 +68,11 @@ class LoadData:
                 # if you have 255 label in your label files, map it to the background class (19) in the Cityscapes dataset
                 tmp_label = label_img.copy()
                 # if 255 in unique_values:
-	            #     label_img[tmp_label==255] = 19
+	            #     label_img[label_img==255] = 19
                 
-                label_img[(tmp_label > 20) & (tmp_label < 40)] = 1
-                label_img[(tmp_label > 240)] = 2
+
+                label_img[(tmp_label > 20) & (tmp_label < 40)] = 1 #blue
+                label_img[(tmp_label > 240)] = 2 #white
                 label_img[(tmp_label < 20)] = 0 #background
 
                 unique_values = np.unique(label_img)
@@ -101,15 +102,15 @@ class LoadData:
                     self.valImList.append(img_file)
                     self.valAnnotList.append(label_file)
 
-                # print("unique value: ", unique_values)
+                print("unique value: ", unique_values)
 
-                # if max_val > (self.classes - 1) or min_val < 0:
-                #     print('Labels can take value between 0 and number of classes {}.'.format(self.classes-1))
-                #     print('You have following values as class labels:')
-                #     print(unique_values)
-                #     print('Some problem with labels. Please check image file: {}'.format(label_file))
-                #     print('Exiting!!')
-                #     exit()
+                if max_val > (self.classes - 1) or min_val < 0:
+                    print('Labels can take value between 0 and number of classes {}.'.format(self.classes-1))
+                    print('You have following values as class labels:')
+                    print(unique_values)
+                    print('Some problem with labels. Please check image file: {}'.format(label_file))
+                    print('Exiting!!')
+                    exit()
                 no_files += 1
 
         if trainStg == True:
