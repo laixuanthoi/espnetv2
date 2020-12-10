@@ -93,7 +93,7 @@ class LoadData:
                     self.valImList.append(img_file)
                     self.valAnnotList.append(label_file)
 
-                print(max_val)
+                print("unique value: ", unique_values)
 
                 if max_val > (self.classes - 1) or min_val < 0:
                     print('Labels can take value between 0 and number of classes {}.'.format(self.classes-1))
