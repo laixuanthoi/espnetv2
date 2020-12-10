@@ -13,7 +13,7 @@ import math
 flags = tf.app.flags
 
 #Directory arguments
-flags.DEFINE_string('dataset_dir', './dataset', 'The dataset directory to find the train, validation and test images.')
+flags.DEFINE_string('dataset_dir', './newdataset', 'The dataset directory to find the train, validation and test images.')
 flags.DEFINE_string('logdir', './log/camvid', 'The log directory to save your checkpoint and event files.')
 #Training arguments
 flags.DEFINE_integer('num_classes', 3, 'The number of classes to predict.')
@@ -54,9 +54,9 @@ logdir = FLAGS.logdir
 
 #===============PREPARATION FOR TRAINING==================
 #Get the images into a list
-image_files = sorted([os.path.join(dataset_dir, 'train', file) for file in os.listdir(dataset_dir + "/train") if file.endswith('.jpg')])
+image_files = sorted([os.path.join(dataset_dir, 'train', file) for file in os.listdir(dataset_dir + "/train") if file.endswith('.png')])
 annotation_files = sorted([os.path.join(dataset_dir, "trainannot", file) for file in os.listdir(dataset_dir + "/trainannot") if file.endswith('.png')])
-image_val_files = sorted([os.path.join(dataset_dir, 'val', file) for file in os.listdir(dataset_dir + "/val") if file.endswith('.jpg')])
+image_val_files = sorted([os.path.join(dataset_dir, 'val', file) for file in os.listdir(dataset_dir + "/val") if file.endswith('.png')])
 annotation_val_files = sorted([os.path.join(dataset_dir, "valannot", file) for file in os.listdir(dataset_dir + "/valannot") if file.endswith('.png')])
 #保存到excel
 csvname=logdir[6:]+'.csv'
@@ -95,6 +95,7 @@ def decode(a,b):
     a.set_shape(shape=(image_height, image_width, 3))
     b.set_shape(shape=(image_height, image_width,1))
     c.set_shape(shape=(image_height, image_width, 3))
+
     return a,b,c
 def decodev(a,b):
     a = tf.read_file(a)
@@ -122,6 +123,7 @@ def run():
         tdataset = tdataset.shuffle(100).batch(batch_size).repeat(num_epochs)
         titerator = tdataset.make_initializable_iterator()
         images,annotations,realimg = titerator.get_next()		
+
 
 		
         images_val = tf.convert_to_tensor(image_val_files)
