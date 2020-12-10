@@ -16,7 +16,7 @@ flags = tf.app.flags
 flags.DEFINE_string('dataset_dir', './newdataset', 'The dataset directory to find the train, validation and test images.')
 flags.DEFINE_string('logdir', './log/camvid', 'The log directory to save your checkpoint and event files.')
 #Training arguments
-flags.DEFINE_integer('num_classes', 3, 'The number of classes to predict.')
+flags.DEFINE_integer('num_classes', 2, 'The number of classes to predict.')
 flags.DEFINE_integer('batch_size', 8, 'The batch_size for training.')
 flags.DEFINE_integer('eval_batch_size', 24, 'The batch size used for validation.')
 flags.DEFINE_integer('image_height',120, "The input height of the images.")
