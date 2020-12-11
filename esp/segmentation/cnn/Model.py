@@ -8,13 +8,15 @@ __author__ = "Sachin Mehta"
 __version__ = "1.0.1"
 __maintainer__ = "Sachin Mehta"
 
+
 class EESP(nn.Module):
     '''
     This class defines the EESP block, which is based on the following principle
         REDUCE ---> SPLIT ---> TRANSFORM --> MERGE
     '''
 
-    def __init__(self, nIn, nOut, stride=1, k=4, r_lim=7, down_method='esp'): #down_method --> ['avg' or 'esp']
+    # down_method --> ['avg' or 'esp']
+    def __init__(self, nIn, nOut, stride=1, k=4, r_lim=7, down_method='esp'):
         '''
         :param nIn: number of input channels
         :param nOut: number of output channels
@@ -27,14 +29,16 @@ class EESP(nn.Module):
         self.stride = stride
         n = int(nOut / k)
         n1 = nOut - (k - 1) * n
-        assert down_method in ['avg', 'esp'], 'One of these is suppported (avg or esp)'
+        assert down_method in [
+            'avg', 'esp'], 'One of these is suppported (avg or esp)'
         assert n == n1, "n(={}) and n1(={}) should be equal for Depth-wise Convolution ".format(n, n1)
-        #assert nIn%k == 0, "Number of input channels ({}) should be divisible by # of branches ({})".format(nIn, k)
-        #assert n % k == 0, "Number of output channels ({}) should be divisible by # of branches ({})".format(n, k)
+        # assert nIn%k == 0, "Number of input channels ({}) should be divisible by # of branches ({})".format(nIn, k)
+        # assert n % k == 0, "Number of output channels ({}) should be divisible by # of branches ({})".format(n, k)
         self.proj_1x1 = CBR(nIn, n, 1, stride=1, groups=k)
 
         # (For convenience) Mapping between dilation rate and receptive field for a 3x3 kernel
-        map_receptive_ksize = {3: 1, 5: 2, 7: 3, 9: 4, 11: 5, 13: 6, 15: 7, 17: 8}
+        map_receptive_ksize = {3: 1, 5: 2, 7: 3,
+                               9: 4, 11: 5, 13: 6, 15: 7, 17: 8}
         self.k_sizes = list()
         for i in range(k):
             ksize = int(3 + 2 * i)
@@ -49,8 +53,9 @@ class EESP(nn.Module):
         #self.bn = nn.ModuleList()
         for i in range(k):
             d_rate = map_receptive_ksize[self.k_sizes[i]]
-            self.spp_dw.append(CDilated(n, n, kSize=3, stride=stride, groups=n, d=d_rate))
-            #self.bn.append(nn.BatchNorm2d(n))
+            self.spp_dw.append(
+                CDilated(n, n, kSize=3, stride=stride, groups=n, d=d_rate))
+            # self.bn.append(nn.BatchNorm2d(n))
         self.conv_1x1_exp = CB(nOut, nOut, 1, 1, groups=k)
         self.br_after_cat = BR(nOut)
         self.module_act = nn.PReLU(nOut)
@@ -73,12 +78,13 @@ class EESP(nn.Module):
             # We donot combine the branches that have the same effective receptive (3x3 in our case)
             # because there are no holes in those kernels.
             out_k = out_k + output[k - 1]
-            #apply batch norm after fusion and then append to the list
+            # apply batch norm after fusion and then append to the list
             output.append(out_k)
         # Merge
-        expanded = self.conv_1x1_exp( # Aggregate the feature maps using point-wise convolution
-            self.br_after_cat( # apply batch normalization followed by activation function (PRelu in this case)
-                torch.cat(output, 1) # concatenate the output of different branches
+        expanded = self.conv_1x1_exp(  # Aggregate the feature maps using point-wise convolution
+            self.br_after_cat(  # apply batch normalization followed by activation function (PRelu in this case)
+                # concatenate the output of different branches
+                torch.cat(output, 1)
             )
         )
         del output
@@ -113,14 +119,15 @@ class DownSampler(nn.Module):
         '''
         super().__init__()
         nout_new = nout - nin
-        self.eesp = EESP(nin, nout_new, stride=2, k=k, r_lim=r_lim, down_method='avg')
+        self.eesp = EESP(nin, nout_new, stride=2, k=k,
+                         r_lim=r_lim, down_method='avg')
         self.avg = nn.AvgPool2d(kernel_size=3, padding=1, stride=2)
         if reinf:
             self.inp_reinf = nn.Sequential(
                 CBR(config_inp_reinf, config_inp_reinf, 3, 1),
                 CB(config_inp_reinf, nout, 1, 1)
             )
-        self.act =  nn.PReLU(nout)
+        self.act = nn.PReLU(nout)
 
     def forward(self, input, input2=None):
         '''
@@ -131,16 +138,18 @@ class DownSampler(nn.Module):
         eesp_out = self.eesp(input)
         output = torch.cat([avg_out, eesp_out], 1)
         if input2 is not None:
-            #assuming the input is a square image
+            # assuming the input is a square image
             w1 = avg_out.size(2)
             while True:
-                input2 = F.avg_pool2d(input2, kernel_size=3, padding=1, stride=2)
+                input2 = F.avg_pool2d(
+                    input2, kernel_size=3, padding=1, stride=2)
                 w2 = input2.size(2)
                 if w2 == w1:
                     break
             output = output + self.inp_reinf(input2)
 
-        return self.act(output) #self.act(output)
+        return self.act(output)  # self.act(output)
+
 
 class EESPNet(nn.Module):
     '''
@@ -157,14 +166,14 @@ class EESPNet(nn.Module):
         channels = 3
 
         r_lim = [13, 11, 9, 7, 5]  # receptive field at each spatial level
-        K = [4]*len(r_lim) # No. of parallel branches at different levels
+        K = [4]*len(r_lim)  # No. of parallel branches at different levels
 
-        base = 32 #base configuration
+        base = 32  # base configuration
         config_len = 5
         config = [base] * config_len
         base_s = 0
         for i in range(config_len):
-            if i== 0:
+            if i == 0:
                 base_s = int(base * s)
                 base_s = math.ceil(base_s / K[0]) * K[0]
                 config[i] = base if base_s > base else base_s
@@ -182,36 +191,42 @@ class EESPNet(nn.Module):
         global config_inp_reinf
         config_inp_reinf = 3
         self.input_reinforcement = True
-        assert len(K) == len(r_lim), 'Length of branching factor array and receptive field array should be the same.'
+        assert len(K) == len(
+            r_lim), 'Length of branching factor array and receptive field array should be the same.'
 
         self.level1 = CBR(channels, config[0], 3, 2)  # 112 L1
 
-        self.level2_0 = DownSampler(config[0], config[1], k=K[0], r_lim=r_lim[0], reinf=self.input_reinforcement)  # out = 56
-        self.level3_0 = DownSampler(config[1], config[2], k=K[1], r_lim=r_lim[1], reinf=self.input_reinforcement) # out = 28
+        self.level2_0 = DownSampler(
+            config[0], config[1], k=K[0], r_lim=r_lim[0], reinf=self.input_reinforcement)  # out = 56
+        self.level3_0 = DownSampler(
+            config[1], config[2], k=K[1], r_lim=r_lim[1], reinf=self.input_reinforcement)  # out = 28
         self.level3 = nn.ModuleList()
         for i in range(reps[1]):
-            self.level3.append(EESP(config[2], config[2], stride=1, k=K[2], r_lim=r_lim[2]))
+            self.level3.append(
+                EESP(config[2], config[2], stride=1, k=K[2], r_lim=r_lim[2]))
 
-        self.level4_0 = DownSampler(config[2], config[3], k=K[2], r_lim=r_lim[2], reinf=self.input_reinforcement) #out = 14
+        self.level4_0 = DownSampler(
+            config[2], config[3], k=K[2], r_lim=r_lim[2], reinf=self.input_reinforcement)  # out = 14
         self.level4 = nn.ModuleList()
         for i in range(reps[2]):
-            self.level4.append(EESP(config[3], config[3], stride=1, k=K[3], r_lim=r_lim[3]))
+            self.level4.append(
+                EESP(config[3], config[3], stride=1, k=K[3], r_lim=r_lim[3]))
 
-        self.level5_0 = DownSampler(config[3], config[4], k=K[3], r_lim=r_lim[3]) #7
+        self.level5_0 = DownSampler(
+            config[3], config[4], k=K[3], r_lim=r_lim[3])  # 7
         self.level5 = nn.ModuleList()
         for i in range(reps[3]):
-            self.level5.append(EESP(config[4], config[4], stride=1, k=K[4], r_lim=r_lim[4]))
+            self.level5.append(
+                EESP(config[4], config[4], stride=1, k=K[4], r_lim=r_lim[4]))
 
         # expand the feature maps using depth-wise separable convolution
         self.level5.append(CBR(config[4], config[4], 3, 1, groups=config[4]))
         self.level5.append(CBR(config[4], config[5], 1, 1, groups=K[4]))
 
-
-
         #self.level5_exp = nn.ModuleList()
         #assert config[5]%config[4] == 0, '{} should be divisible by {}'.format(config[5], config[4])
         #gr = int(config[5]/config[4])
-        #for i in range(gr):
+        # for i in range(gr):
         #    self.level5_exp.append(CBR(config[4], config[4], 1, 1, groups=pow(2, i)))
 
         self.classifier = nn.Linear(config[5], classes)
@@ -269,11 +284,9 @@ class EESPNet(nn.Module):
                     out_l5 = layer(out_l5)
 
             #out_e = []
-            #for layer in self.level5_exp:
+            # for layer in self.level5_exp:
             #    out_e.append(layer(out_l5))
             #out_exp = torch.cat(out_e, dim=1)
-
-
 
             output_g = F.adaptive_avg_pool2d(out_l5, output_size=1)
             output_g = F.dropout(output_g, p=p, training=self.training)
@@ -281,5 +294,3 @@ class EESPNet(nn.Module):
 
             return self.classifier(output_1x1)
         return out_l1, out_l2, out_l3, out_l4
-
-

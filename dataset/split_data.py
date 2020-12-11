@@ -23,10 +23,12 @@ rate = int(len(fileNames)*0.7)
 train_arr = fileNames[:rate]
 val_arr = fileNames[rate:]
 
+
 def writeTextFile(textFile, arr):
     with open(textFile, 'w') as f:
         for a in arr:
             f.write('segmentation/data/{},segmentation/label/{}\n'.format(a, a))
+
 
 writeTextFile(train_file, train_arr)
 writeTextFile(val_file, val_arr)

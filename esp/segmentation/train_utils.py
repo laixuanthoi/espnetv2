@@ -1,8 +1,8 @@
-#============================================
+# ============================================
 __author__ = "Sachin Mehta"
 __license__ = "MIT"
 __maintainer__ = "Sachin Mehta"
-#============================================
+# ============================================
 from IOUEval import iouEval
 import time
 import torch
@@ -13,8 +13,8 @@ def poly_lr_scheduler(args, optimizer, epoch, power=0.9):
     lr = round(args.lr * (1 - epoch / args.max_epochs) ** power, 8)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
-
     return lr
+
 
 def val(args, val_loader, model, criterion):
     '''
@@ -24,7 +24,7 @@ def val(args, val_loader, model, criterion):
     :param criterion: loss function
     :return: average epoch loss, overall pixel-wise accuracy, per class accuracy, per class iu, and mIOU
     '''
-    #switch to evaluation mode
+    # switch to evaluation mode
     model.eval()
 
     iouEvalVal = iouEval(args.classes)
@@ -36,8 +36,10 @@ def val(args, val_loader, model, criterion):
         start_time = time.time()
 
         if args.onGPU:
-            input = input.cuda(non_blocking=True) #torch.autograd.Variable(input, volatile=True)
-            target = target.cuda(non_blocking=True)#torch.autograd.Variable(target, volatile=True)
+            # torch.autograd.Variable(input, volatile=True)
+            input = input.cuda(non_blocking=True)
+            # torch.autograd.Variable(target, volatile=True)
+            target = target.cuda(non_blocking=True)
 
         # run the mdoel
         output1 = model(input)
@@ -53,13 +55,15 @@ def val(args, val_loader, model, criterion):
         # compute the confusion matrix
         iouEvalVal.addBatch(output1.max(1)[1].data, target.data)
 
-        print('[%d/%d] loss: %.3f time: %.2f' % (i, total_batches, loss.item(), time_taken))
+        print('[%d/%d] loss: %.3f time: %.2f' %
+              (i, total_batches, loss.item(), time_taken))
 
     average_epoch_loss_val = sum(epoch_loss) / len(epoch_loss)
 
     overall_acc, per_class_acc, per_class_iu, mIOU = iouEvalVal.getMetric()
 
     return average_epoch_loss_val, overall_acc, per_class_acc, per_class_iu, mIOU
+
 
 def train(args, train_loader, model, criterion, optimizer, epoch):
     '''
@@ -83,13 +87,14 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
         start_time = time.time()
 
         if args.onGPU:
-            input = input.cuda(non_blocking=True) #torch.autograd.Variable(input, volatile=True)
+            # torch.autograd.Variable(input, volatile=True)
+            input = input.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
 
-        #run the mdoel
+        # run the mdoel
         output1, output2 = model(input)
 
-        #set the grad to zero
+        # set the grad to zero
         optimizer.zero_grad()
         loss1 = criterion(output1, target)
         loss2 = criterion(output2, target)
@@ -102,16 +107,18 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
         epoch_loss.append(loss.item())
         time_taken = time.time() - start_time
 
-        #compute the confusion matrix
+        # compute the confusion matrix
         iouEvalTrain.addBatch(output1.max(1)[1].data, target.data)
 
-        print('[%d/%d] loss: %.3f time:%.2f' % (i, total_batches, loss.item(), time_taken))
+        print('[%d/%d] loss: %.3f time:%.2f' %
+              (i, total_batches, loss.item(), time_taken))
 
     average_epoch_loss_train = sum(epoch_loss) / len(epoch_loss)
 
     overall_acc, per_class_acc, per_class_iu, mIOU = iouEvalTrain.getMetric()
 
     return average_epoch_loss_train, overall_acc, per_class_acc, per_class_iu, mIOU
+
 
 def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
     '''
@@ -121,6 +128,7 @@ def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
     :return: nothing
     '''
     torch.save(state, filenameCheckpoint)
+
 
 def netParams(model):
     '''

@@ -3,16 +3,18 @@ import cv2
 import pickle
 
 
-#============================================
+# ============================================
 __author__ = "Sachin Mehta"
 __license__ = "MIT"
 __maintainer__ = "Sachin Mehta"
-#============================================
+# ============================================
+
 
 class LoadData:
     '''
     Class to laod the data
     '''
+
     def __init__(self, data_dir, classes, cached_data_file, normVal=1.10):
         '''
         :param data_dir: directory where the dataset is kept
@@ -60,23 +62,25 @@ class LoadData:
                 # we expect the text file to contain the data in following format
                 # <RGB Image>, <Label Image>
                 line_arr = line.split(',')
-                img_file = ((self.data_dir).strip() + '/' + line_arr[0].strip()).strip()
-                label_file = ((self.data_dir).strip() + '/' + line_arr[1].strip()).strip()
+                img_file = ((self.data_dir).strip() + '/' +
+                            line_arr[0].strip()).strip()
+                label_file = ((self.data_dir).strip() + '/' +
+                              line_arr[1].strip()).strip()
+
+                # print(label_file, img_file)
                 label_img = cv2.imread(label_file, 0)
-                
 
                 # if you have 255 label in your label files, map it to the background class (19) in the Cityscapes dataset
-                tmp_label = label_img.copy()
+                # tmp_label = label_img.copy()
                 # if 255 in unique_values:
-	            #     label_img[label_img==255] = 19
-                
+                #     label_img[label_img==255] = 19
 
-                label_img[(tmp_label > 20) & (tmp_label < 40)] = 1 #blue
-                label_img[(tmp_label > 240)] = 2 #white
-                label_img[(tmp_label < 20)] = 0 #background
+                # label_img[(tmp_label > 20) & (tmp_label < 40)] = 1  # blue
+                # label_img[(tmp_label > 240)] = 2  # white
+                # label_img[(tmp_label < 20)] = 0  # background
 
                 unique_values = np.unique(label_img)
-                
+
                 max_val = max(unique_values)
                 min_val = min(unique_values)
 
@@ -88,7 +92,7 @@ class LoadData:
                     global_hist += hist[0]
 
                     rgb_img = cv2.imread(img_file)
-                    self.mean[0] += np.mean(rgb_img[:,:,0])
+                    self.mean[0] += np.mean(rgb_img[:, :, 0])
                     self.mean[1] += np.mean(rgb_img[:, :, 1])
                     self.mean[2] += np.mean(rgb_img[:, :, 2])
 
@@ -102,13 +106,15 @@ class LoadData:
                     self.valImList.append(img_file)
                     self.valAnnotList.append(label_file)
 
-                print("unique value: ", unique_values)
+                # print("unique value: ", unique_values)
 
                 if max_val > (self.classes - 1) or min_val < 0:
-                    print('Labels can take value between 0 and number of classes {}.'.format(self.classes-1))
+                    print('Labels can take value between 0 and number of classes {}.'.format(
+                        self.classes-1))
                     print('You have following values as class labels:')
                     print(unique_values)
-                    print('Some problem with labels. Please check image file: {}'.format(label_file))
+                    print(
+                        'Some problem with labels. Please check image file: {}'.format(label_file))
                     print('Exiting!!')
                     exit()
                 no_files += 1
@@ -118,7 +124,7 @@ class LoadData:
             self.mean /= no_files
             self.std /= no_files
 
-            #compute the class imbalance information
+            # compute the class imbalance information
             self.compute_class_weights(global_hist)
         return 0
 
@@ -149,7 +155,3 @@ class LoadData:
             pickle.dump(data_dict, open(self.cached_data_file, "wb"))
             return data_dict
         return None
-
-
-
-
