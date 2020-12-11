@@ -75,20 +75,19 @@ def trainValidateSegmentation(args):
     print(data['mean'], data['std'])
     print(data['classWeights'])
 
-    # compose the data with transforms
+    #compose the data with transforms
     trainDataset_main = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
         myTransforms.RandomCropResize(size=(args.inWidth, args.inHeight)),
         myTransforms.RandomFlip(),
-        # myTransforms.RandomCrop(64).
+        #myTransforms.RandomCrop(64).
         myTransforms.ToTensor(args.scaleIn),
         #
     ])
 
     trainDataset_scale1 = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
-        myTransforms.RandomCropResize(
-            size=(int(args.inWidth*1.5), int(1.5*args.inHeight))),
+        myTransforms.RandomCropResize(size=(int(args.inWidth*1.5), int(1.5*args.inHeight))),
         myTransforms.RandomFlip(),
         myTransforms.ToTensor(args.scaleIn),
         #
@@ -96,8 +95,7 @@ def trainValidateSegmentation(args):
 
     trainDataset_scale2 = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
-        myTransforms.RandomCropResize(
-            size=(int(args.inWidth*1.25), int(1.25*args.inHeight))),  # 1536, 768
+        myTransforms.RandomCropResize(size=(int(args.inWidth*2), int(2*args.inHeight))), # 1536, 768
         myTransforms.RandomFlip(),
         myTransforms.ToTensor(args.scaleIn),
         #
@@ -105,8 +103,7 @@ def trainValidateSegmentation(args):
 
     trainDataset_scale3 = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
-        myTransforms.RandomCropResize(
-            size=(int(args.inWidth*0.75), int(0.75*args.inHeight))),
+        myTransforms.RandomCropResize(size=(int(args.inWidth*2.5), int(2.5*args.inHeight))),
         myTransforms.RandomFlip(),
         myTransforms.ToTensor(args.scaleIn),
         #
@@ -114,12 +111,12 @@ def trainValidateSegmentation(args):
 
     trainDataset_scale4 = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
-        myTransforms.RandomCropResize(
-            size=(int(args.inWidth*0.5), int(0.5*args.inHeight))),
+        myTransforms.RandomCropResize(size=(int(args.inWidth*0.5), int(0.5*args.inHeight))),
         myTransforms.RandomFlip(),
         myTransforms.ToTensor(args.scaleIn),
         #
     ])
+
 
     valDataset = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
@@ -209,10 +206,10 @@ def trainValidateSegmentation(args):
         # We consider 1 epoch with all the training data (at different scales)
         print('train1')
         train(args, trainLoader_scale1, model, criteria, optimizer, epoch)
-        # print('train2')
-        # train(args, trainLoader_scale2, model, criteria, optimizer, epoch)
-        # print('train3')
-        # train(args, trainLoader_scale3, model, criteria, optimizer, epoch)
+        print('train2')
+        train(args, trainLoader_scale2, model, criteria, optimizer, epoch)
+        print('train3')
+        train(args, trainLoader_scale3, model, criteria, optimizer, epoch)
         print('train4')
         train(args, trainLoader_scale4, model, criteria, optimizer, epoch)
         print('train main')

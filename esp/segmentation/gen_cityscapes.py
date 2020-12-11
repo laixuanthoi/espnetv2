@@ -66,6 +66,7 @@ def relabel(img):
     img[img == 255] = 0
     return img
 
+import os
 
 def evaluateModel(args, model, image_list):
     # gloabl mean and std values
@@ -100,27 +101,32 @@ def evaluateModel(args, model, image_list):
         classMap_numpy = img_out[0].max(0)[1].byte().cpu().data.numpy()
         # upsample the feature maps to the same size as the input image using Nearest neighbour interpolation
         # upsample the feature map from 1024x512 to 2048x1024
-        classMap_numpy = cv2.resize(classMap_numpy, (args.inWidth*2, args.inHeight*2), interpolation=cv2.INTER_NEAREST)
+        # classMap_numpy = cv2.resize(classMap_numpy, (args.inWidth*2, args.inHeight*2), interpolation=cv2.INTER_NEAREST)
         if i % 100 == 0 and i > 0:
             print('Processed [{}/{}]'.format(i, len(image_list)))
 
-        name = imgName.split('/')[-1]
-
+        # name = imgName.split('/')[-1]
+        basename = os.path.basename(imgName)
+        name = os.path.splitext(basename)[0]
+    
         if args.colored:
             classMap_numpy_color = np.zeros((img.shape[1], img.shape[2], img.shape[0]), dtype=np.uint8)
+            # classMap_numpy_color = np.zeros((224, 224, 3), dtype=np.uint8)
             for idx in range(len(pallete)):
                 [r, g, b] = pallete[idx]
                 classMap_numpy_color[classMap_numpy == idx] = [b, g, r]
-            cv2.imwrite(args.savedir + os.sep + 'c_' + name.replace(args.img_extn, 'png'), classMap_numpy_color)
+            
+            # classMap_numpy_color = cv2.resize(classMap_numpy_color,(320, 120))
+            # cv2.imwrite(args.savedir + os.sep + 'c_{}.png'.format(name), classMap_numpy_color)
             if args.overlay:
                 overlayed = cv2.addWeighted(img_orig, 0.5, classMap_numpy_color, 0.5, 0)
-                cv2.imwrite(args.savedir + os.sep + 'over_' + name.replace(args.img_extn, 'jpg'), overlayed)
+                cv2.imwrite(args.savedir + os.sep + 'over_{}.jpg'.format(name), overlayed)
 
         if args.cityFormat:
             classMap_numpy = relabel(classMap_numpy.astype(np.uint8))
 
 
-        cv2.imwrite(args.savedir + os.sep + name.replace(args.img_extn, 'png'), classMap_numpy)
+        # cv2.imwrite(args.savedir + os.sep + name.replace(args.img_extn, 'png'), classMap_numpy)
 
 
 def main(args):
