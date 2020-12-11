@@ -9,11 +9,11 @@ from cnn import SegmentationModel as net
 from torch import nn
 
 
-#============================================
+# ============================================
 __author__ = "Sachin Mehta"
 __license__ = "MIT"
 __maintainer__ = "Sachin Mehta"
-#============================================
+# ============================================
 
 pallete = [[128, 64, 128],
            [244, 35, 232],
@@ -66,12 +66,11 @@ def relabel(img):
     img[img == 255] = 0
     return img
 
-import os
 
 def evaluateModel(args, model, image_list):
     # gloabl mean and std values
-    mean = [72.3923111, 82.90893555, 73.15840149]
-    std = [45.3192215, 46.15289307, 44.91483307]
+    mean = [133.49126, 123.00861, 120.21908]
+    std = [41.028954, 41.625504, 43.69621]
 
     model.eval()
     for i, imgName in enumerate(image_list):
@@ -97,7 +96,6 @@ def evaluateModel(args, model, image_list):
         if args.gpu:
             img_tensor = img_tensor.cuda()
         img_out = model(img_tensor)
-
         classMap_numpy = img_out[0].max(0)[1].byte().cpu().data.numpy()
         # upsample the feature maps to the same size as the input image using Nearest neighbour interpolation
         # upsample the feature map from 1024x512 to 2048x1024
@@ -108,23 +106,25 @@ def evaluateModel(args, model, image_list):
         # name = imgName.split('/')[-1]
         basename = os.path.basename(imgName)
         name = os.path.splitext(basename)[0]
-    
+
         if args.colored:
-            classMap_numpy_color = np.zeros((img.shape[1], img.shape[2], img.shape[0]), dtype=np.uint8)
+            classMap_numpy_color = np.zeros(
+                (img.shape[1], img.shape[2], img.shape[0]), dtype=np.uint8)
             # classMap_numpy_color = np.zeros((224, 224, 3), dtype=np.uint8)
             for idx in range(len(pallete)):
                 [r, g, b] = pallete[idx]
                 classMap_numpy_color[classMap_numpy == idx] = [b, g, r]
-            
+
             # classMap_numpy_color = cv2.resize(classMap_numpy_color,(320, 120))
             # cv2.imwrite(args.savedir + os.sep + 'c_{}.png'.format(name), classMap_numpy_color)
             if args.overlay:
-                overlayed = cv2.addWeighted(img_orig, 0.5, classMap_numpy_color, 0.5, 0)
-                cv2.imwrite(args.savedir + os.sep + 'over_{}.jpg'.format(name), overlayed)
+                overlayed = cv2.addWeighted(
+                    img_orig, 0.5, classMap_numpy_color, 0.5, 0)
+                cv2.imwrite(args.savedir + os.sep +
+                            'over_{}.jpg'.format(name), overlayed)
 
         if args.cityFormat:
             classMap_numpy = relabel(classMap_numpy.astype(np.uint8))
-
 
         # cv2.imwrite(args.savedir + os.sep + name.replace(args.img_extn, 'png'), classMap_numpy)
 
@@ -135,7 +135,8 @@ def main(args):
 
     modelA = net.EESPNet_Seg(args.classes, s=args.s)
     if not os.path.isfile(args.pretrained):
-        print('Pre-trained model file does not exist. Please check ./pretrained_models folder')
+        print(
+            'Pre-trained model file does not exist. Please check ./pretrained_models folder')
         exit(-1)
     modelA = nn.DataParallel(modelA)
     modelA.load_state_dict(torch.load(args.pretrained))
@@ -156,21 +157,27 @@ if __name__ == '__main__':
     parser.add_argument('--model', default="ESPNetv2", help='Model name')
     parser.add_argument('--data_dir', default="./data", help='Data directory')
     parser.add_argument('--img_extn', default="png", help='RGB Image format')
-    parser.add_argument('--inWidth', type=int, default=1024, help='Width of RGB image')
-    parser.add_argument('--inHeight', type=int, default=512, help='Height of RGB image')
-    parser.add_argument('--savedir', default='./results', help='directory to save the results')
-    parser.add_argument('--gpu', default=True, type=bool, help='Run on CPU or GPU. If TRUE, then GPU.')
-    parser.add_argument('--pretrained', default='', help='Pretrained weights directory.')
+    parser.add_argument('--inWidth', type=int, default=1024,
+                        help='Width of RGB image')
+    parser.add_argument('--inHeight', type=int, default=512,
+                        help='Height of RGB image')
+    parser.add_argument('--savedir', default='./results',
+                        help='directory to save the results')
+    parser.add_argument('--gpu', default=True, type=bool,
+                        help='Run on CPU or GPU. If TRUE, then GPU.')
+    parser.add_argument('--pretrained', default='',
+                        help='Pretrained weights directory.')
     parser.add_argument('--s', default=0.5, type=float, help='scale')
     parser.add_argument('--cityFormat', default=True, type=bool, help='If you want to convert to cityscape '
-                                                                       'original label ids')
+                        'original label ids')
     parser.add_argument('--colored', default=False, type=bool, help='If you want to visualize the '
-                                                                   'segmentation masks in color')
+                        'segmentation masks in color')
     parser.add_argument('--overlay', default=False, type=bool, help='If you want to visualize the '
-                                                                   'segmentation masks overlayed on top of RGB image')
-    parser.add_argument('--classes', default=20, type=int, help='Number of classes in the dataset. 20 for Cityscapes')
+                        'segmentation masks overlayed on top of RGB image')
+    parser.add_argument('--classes', default=20, type=int,
+                        help='Number of classes in the dataset. 20 for Cityscapes')
 
     args = parser.parse_args()
     if args.overlay:
-        args.colored = True # This has to be true if you want to overlay
+        args.colored = True  # This has to be true if you want to overlay
     main(args)
