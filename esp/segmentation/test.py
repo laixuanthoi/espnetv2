@@ -72,5 +72,5 @@ for f in glob.glob(os.path.join("dataset/data/*.png")):
     cv2.imshow("image", image)
     cv2.waitKey(0)
 
-# python .\main.py --data_dir dataset/ --inWidth 224 --inHeight 224 --max_epochs 300 --num_workers 1 --batch_size 12 --classes 3 --scaleIn 1 --s 0.5
-# python .\gen_cityscapes.py --data_dir dataset/data --inWidth 224 --inHeight 224 --pretrained .\results_espnetv2_0.5\model_best.pth --s 0.5 --classes 3 --overlay True --img_extn png
+# python main.py --data_dir dataset/ --inWidth 224 --inHeight 224 --max_epochs 300 --num_workers 1 --batch_size 12 --classes 3 --scaleIn 1 --s 0.5
+# python gen_cityscapes.py --data_dir dataset/data --inWidth 224 --inHeight 224 --pretrained results_espnetv2_0.5\model_best.pth --s 0.5 --classes 3 --overlay True --img_extn png
